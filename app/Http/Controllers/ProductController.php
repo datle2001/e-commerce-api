@@ -16,19 +16,17 @@ class ProductController extends Controller
                 'photoUrl' => './assets/gummy.png',
                 'rating' => 4,
                 'quantityInStock' => 4,
-                'quantityPick' => 0,
                 'code' => '1'
             ],
             [
-                'name' => 'Gummy',
-                'price' => 10,
-                'description' => 'sleep',
-                'photoUrl' => './assets/gummy.png',
-                'rating' => 4,
-                'quantityInStock' => 4,
-                'quantityPick' => 0,
-                'code' => '1'
-                ]
+                'name' => 'Shampoo',
+                'price' => 20,
+                'description' => 'wash',
+                'photoUrl' => './assets/shampoo.jpg',
+                'rating' => 3,
+                'quantityInStock' => 5,
+                'code' => '2'
+            ]
         ];
         return response()->json($products, 200);
     }
@@ -40,7 +38,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        return response('it works');
+        return response('store works');
     }
 
     /**
@@ -51,7 +49,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        return response('it works');
+        return response('show works');
     }
 
     /**
@@ -62,7 +60,7 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        return response('it works');
+        return response('edit works');
     }
 
     /**
@@ -74,7 +72,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        return response('it works');
+        return response('update works');
     }
 
     /**
@@ -85,6 +83,6 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        return response('it works');
+        return response('destroy works');
     }
 }

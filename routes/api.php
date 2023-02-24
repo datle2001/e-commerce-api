@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\StripePaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,7 +16,12 @@ use App\Http\Controllers\ProductController;
 */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    print($request->user());
     return $request->user();
+});
+Route::controller(StripePaymentController::class)->group(function(){
+    Route::get('stripe', 'stripe');
+    Route::post('stripe', 'stripePost')->name('stripe.post');
 });
 
 Route::group(['prefix' => 'v1'], function () {
