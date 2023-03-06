@@ -14,11 +14,6 @@ use App\Http\Controllers\ProductController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    print($request->user());
-    return $request->user();
-});
 Route::controller(StripePaymentController::class)->group(function(){
     Route::get('stripe', 'stripe');
     Route::post('stripe', 'stripePost')->name('stripe.post');
@@ -26,7 +21,5 @@ Route::controller(StripePaymentController::class)->group(function(){
 
 Route::group(['prefix' => 'v1'], function () {
     Route::resource('products', ProductController::class);
-    Route::get('a', function () {
-        return 'it works';
-    });
+    Route::resource('user', UserController::class);
 });

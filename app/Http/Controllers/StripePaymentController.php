@@ -26,14 +26,6 @@ class StripePaymentController extends Controller
         } catch (\Throwable $th) {
             return $th;
         }
-        
-        // Stripe\Charge::create ([
-        //     "amount" => 100 * 100,
-        //     "currency" => "usd",
-        //     "source" => $request->stripeToken,
-        //     "description" => "Test payment from itsolutionstuff.com." 
-        // ]);
-        //Session::flash('success', 'Payment successful!');
     }
 
     private function getTotal(Request $request) {
