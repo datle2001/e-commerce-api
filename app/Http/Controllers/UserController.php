@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function index()
+    /**
+     * Return all users.
+     *
+     * @return string
+     */
+    public function index() : string
     {
-        
+        return "4owiwi";
     }
     /**
      * Store a newly created resource in storage.
@@ -24,12 +30,11 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-        return response('show works');
+    public function show($request)
+    {   return response("hihi", 200);
     }
 
     /**
