@@ -18,7 +18,7 @@ class ProductFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->realText($maxNbChars = 20),
-            'description' => $this->faker->unique()->paragraphs(1),
+            'description' => $this->faker->unique()->paragraph(2),
             'price' => $this->faker->numberBetween(1, 1000),
             'quantity_available' => $this->faker->numberBetween(0, 20),
             'photo' => $this->faker->image()

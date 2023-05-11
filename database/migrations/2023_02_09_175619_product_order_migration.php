@@ -14,9 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('product_order', function (Blueprint $table) {
-            $table->integer('product_id');
-            $table->integer('order_id');
+            $table->bigInteger('product_id');
+            $table->bigInteger('order_id');
             $table->integer('quantity');
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 
