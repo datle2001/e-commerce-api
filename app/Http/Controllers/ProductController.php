@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -15,12 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all(['id', 'name', 'description', 'price', 'quantity_available', 'photo']);
-
-        foreach($products as &$product) {
-            $file = File::get($product->photo);
-            $product->photo = base64_encode(($file));
-        }
+        $products = Product::all();
 
         return response($products, 200);
     }
@@ -75,7 +69,15 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = Product::find($id);
-        $product->update($request->all());
+        $updates = $request->all();
+
+        if ($updates['rating']) {
+            $curRating = $product->rating;
+            $curNumRating = $product->num_rating;
+            $newNumRating = $curNumRating + 1;
+            $newRating = ($curRating * $curNumRating + $updates['rating']) / $newNumRating;
+            $product->update(['num_rating' => $newNumRating, 'rating' => $newRating]);
+        }
         return $product;
     }
 
