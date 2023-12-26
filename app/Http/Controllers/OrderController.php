@@ -54,7 +54,7 @@ class OrderController extends Controller
             }
         }
 
-        return $this->getStripeCheckoutLinkFrom($order->products(), $order->id);
+        return $this->getStripeCheckoutLinkFrom($order->products(), $order->id, $request->header('origin'));
     }
 
     public function update(Request $request)
@@ -88,7 +88,7 @@ class OrderController extends Controller
     /**
      * @return \Stripe\PaymentLink link to checkout session
      */
-    private function getStripeCheckoutLinkFrom($orderedProducts, $orderId)
+    private function getStripeCheckoutLinkFrom($orderedProducts, $orderId, $originURL)
     {
         $stripe = new \Stripe\StripeClient(
             env('STRIPE_SECRET')
@@ -105,7 +105,7 @@ class OrderController extends Controller
             'after_completion' => [
                 'type' => 'redirect',
                 'redirect' => [
-                    'url' => $_SERVER['CLIENT_URL'] . "/confirmation/" . $orderId
+                    'url' => $originURL . "/confirmation/" . $orderId
                 ]
             ],
         ]);
