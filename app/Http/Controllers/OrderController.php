@@ -105,7 +105,7 @@ class OrderController extends Controller
             'after_completion' => [
                 'type' => 'redirect',
                 'redirect' => [
-                    'url' => env('CLIENT_URL') . "/confirmation/" . $orderId
+                    'url' => $_SERVER['CLIENT_URL'] . "/confirmation/" . $orderId
                 ]
             ],
         ]);
