@@ -54,7 +54,10 @@ class OrderController extends Controller
             }
         }
 
-        return $this->getStripeCheckoutLinkFrom($order->products(), $order->id, $request->header('origin'));
+        $origin = $request->header('origin');
+        $redirectURL = str_contains($origin, 'github') ? $origin.'/e-commerce-client/' : $request->header('referer');
+
+        return $this->getStripeCheckoutLinkFrom($order->products(), $order->id, $redirectURL);
     }
 
     public function update(Request $request)
