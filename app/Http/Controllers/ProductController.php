@@ -34,7 +34,7 @@ class ProductController extends Controller
             'quantity_available' => 'required',
         ]);
 
-        return Product::create($request->all());
+        return response(Product::create($request->all()));
     }
 
     /**

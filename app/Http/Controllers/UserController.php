@@ -36,15 +36,15 @@ class UserController extends Controller
             'unique' => 'The :attribute has already been taken.'
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             $message = $validator->getMessageBag()->first();
             return response(['message' => $message], 422);
         }
 
         $fields = $validator->validated();
         $curl = curl_init();
-        $url = env("RAPIDAPI_URL").http_build_query(['email' => $fields['email']]);
-        
+        $url = env("RAPIDAPI_URL") . http_build_query(['email' => $fields['email']]);
+
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -66,60 +66,62 @@ class UserController extends Controller
             return response(['message' => 'Cannot validate email due to server error'], 401);
         }
 
-        if($emailValidationResponse->status == 'valid') {
+        if ($emailValidationResponse->status == 'valid') {
             $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
             $customer = $stripe->customers->create([
                 'email' => $fields['email'],
                 'name' => $fields['username'],
             ]);
-            
+
             $user = User::create([
                 'username' => $fields['username'],
                 'password' => bcrypt($fields['password']),
                 'email' => $fields['email'],
                 'stripe_id' => $customer['id'],
             ]);
-         
+
             $token = $user->createToken($user->id)->plainTextToken;
             $response = [
                 'user' => $user,
-                'token' => 'Bearer '.$token
+                'token' => 'Bearer ' . $token
             ];
             return response($response, 201);
         }
 
-        if($emailValidationResponse->status == 'invalid') {
+        if ($emailValidationResponse->status == 'invalid') {
             return response(['message' => 'Email does not exist'], 510);
         }
 
         return response(['message' => 'Contact Support Group'], 500);
     }
-    public function loginWithToken(Request $request) {
+    public function loginWithToken(Request $request)
+    {
         $user = auth('sanctum')->user();
         $this->getCard($user);
         $response = [
             'user' => $user,
-            'token' => 'Bearer '.$request->bearerToken()
+            'token' => 'Bearer ' . $request->bearerToken()
         ];
 
         return response($response, 201);
     }
 
     public function login(Request $request)
-    {  
+    {
+
         $credValidator = Validator::make($request->all(), [
             'password' => 'required|string',
             'email' => 'required|string|email',
         ], []);
 
-        if($credValidator->fails()) {
+        if ($credValidator->fails()) {
             $message = $credValidator->getMessageBag()->first();
             return response(['message' => $message], 422);
         }
 
         $fields = $credValidator->validated();
         $user = User::where('email', $fields['email'])->first();
-        
+
         if (!$user || !Hash::check($fields['password'], $user->password)) {
             return response(['message' => 'Invalid credentials'], 401);
         }
@@ -128,18 +130,17 @@ class UserController extends Controller
         $this->getCard($user);
         $response = [
             'user' => $user,
-            'token' => 'Bearer '.$token
+            'token' => 'Bearer ' . $token
         ];
-        return response($response, 201);  
+        return response($response, 201);
     }
-    
-    public function logout(Request $request) {
+
+    public function logout(Request $request)
+    {
         $user = auth('sanctum')->user();
         PersonalAccessToken::where('tokenable_id', $user->id)->delete();
 
-        return [
-            'message' => 'Logged out',
-        ];
+        return response($user, 200);
     }
 
     /**
@@ -153,38 +154,40 @@ class UserController extends Controller
     {
         $user = User::find($id);
         $username = $request->input('username');
-        if(!empty($username)) {
+        if (!empty($username)) {
             $user->username = $username;
-        } 
+        }
         $sex = $request->input('sex');
-        if(!empty($sex)) {
+        if (!empty($sex)) {
             $user->sex = $sex;
         }
         $dob = $request->input('dob');
-        if(!empty($dob)) {
+        if (!empty($dob)) {
             $savedDate = DateTime::createFromFormat('Y-m-d', $dob);
             $user->dob = $savedDate;
         }
-        
+
         $user->save();
         return response(['message' => 'user updated successfully'], 201);
     }
 
-    private function getTokenId($tokenToCheck) {
+    private function getTokenId($tokenToCheck)
+    {
         return substr($tokenToCheck, 0, strpos($tokenToCheck, '|'));
     }
 
-    private function getCard($user) {
+    private function getCard($user)
+    {
         $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
         $pms = $stripe->customers->allPaymentMethods(
             $user['stripe_id'],
             ['type' => 'card']
         );
-        if($pms && sizeof($pms) > 0) {
+        if ($pms && sizeof($pms) > 0) {
             $cardFromStripe = $pms['data'][0]['card'];
             $cardResponse = [
                 'cardNumber' => $cardFromStripe['last4'],
-                'effDate' => $cardFromStripe['exp_month'].'/'.$cardFromStripe['exp_year'],
+                'effDate' => $cardFromStripe['exp_month'] . '/' . $cardFromStripe['exp_year'],
             ];
             $user->card = $cardResponse;
         }

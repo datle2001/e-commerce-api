@@ -19,7 +19,9 @@ Route::group(['prefix' => 'v1'], function () {
     //public routes
     Route::post('login', [UserController::class, 'login']);
     Route::post('register', [UserController::class, 'register']);
-    
+    Route::get('products', [ProductController::class, 'index']);
+    // Route::get('products/{id}', [ProductController::class, 'show']);
+
     //protected route
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('loginWithToken', [UserController::class, 'loginWithToken']);
