@@ -20,7 +20,7 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('login', [UserController::class, 'login']);
     Route::post('register', [UserController::class, 'register']);
     Route::get('products', [ProductController::class, 'index']);
-    // Route::get('products/{id}', [ProductController::class, 'show']);
+    Route::get('products/{id}', [ProductController::class, 'show']);
 
     //protected route
     Route::middleware(['auth:sanctum'])->group(function () {
@@ -30,7 +30,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('card', [StripeController::class, 'addCard']);
         Route::post('checkout', [StripeController::class, 'checkout']);
         Route::resource('orders', OrderController::class);
-        Route::resource('products', ProductController::class);
+        Route::patch('products', [ProductController::class, 'update']);
     });
 
     Route::get('invalid_token', function() {
