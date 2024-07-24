@@ -9,7 +9,7 @@ use App\DTOs\UserDTO;
 class StripeService {
   public function createStripeUser(UserDTO $userDTO): string
   {
-    $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+    $stripe = new \Stripe\StripeClient(config('api.stripe_secret'));
 
     try {
       $customer = $stripe->customers->create([

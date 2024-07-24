@@ -43,7 +43,7 @@ class ProductService {
   }
 
   private function addPhotoUrl($product) {
-    $product['photoUrl'] = env("GOOGLE_STORAGE_URL") . '/products/' . $product['photo_key'];
+    $product['photoUrl'] = config('api.google_storage_url') . '/products/' . $product['photo_key'];
     unset($product['photo_key']);
   }
 }

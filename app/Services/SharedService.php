@@ -5,7 +5,7 @@ namespace App\Services;
 class SharedService {
   public function verifyEmail(string $email): array {
     $curl = curl_init();
-    $url = env("RAPIDAPI_URL") . http_build_query(['email' => $email]);
+    $url = config('api.rapid_api_url') . http_build_query(['email' => $email]);
 
     curl_setopt_array($curl, [
       CURLOPT_URL => $url,
@@ -16,7 +16,10 @@ class SharedService {
       CURLOPT_TIMEOUT => 30,
       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
       CURLOPT_CUSTOMREQUEST => "GET",
-      CURLOPT_HTTPHEADER => [env("RAPIDAPI_HOST"), env("RAPIDAPI_KEY")],
+      CURLOPT_HTTPHEADER => [
+        config('api.rapid_api_host'), 
+        config('api.rapid_api_key')
+      ],
     ]);
 
     $emailValidationResponse = json_decode(curl_exec($curl));
