@@ -18,15 +18,18 @@ use Illuminate\Support\Facades\Route;
 Route::group(['prefix' => 'v1'], function () {
     //public routes
     Route::post('login', [UserController::class, 'login']);
-    Route::post('register', [UserController::class, 'register']);
+    Route::post('signup', [UserController::class, 'signup']);
     Route::get('products', [ProductController::class, 'index']);
     Route::get('products/{id}', [ProductController::class, 'show']);
 
-    //protected route
+    //protected routes
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('loginWithToken', [UserController::class, 'loginWithToken']);
         Route::post('logout', [UserController::class, 'logout']);
+
+        Route::get('user', [UserController::class, 'show']);
         Route::patch('user/{id}', [UserController::class, 'update']);
+        
         Route::post('card', [StripeController::class, 'addCard']);
         Route::post('checkout', [StripeController::class, 'checkout']);
         Route::resource('orders', OrderController::class);

@@ -2,30 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\UserDTO;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\PersonalAccessToken;
 use Validator;
+use App\Services\UserService;
+use App\Services\SharedService;
 
 class UserController extends Controller
 {
-    /**
-     * Return all users.
-     *
-     * @return Collection
-     */
-    public function index()
+    private UserService $userService;
+    private SharedService $sharedService;
+
+    public function __construct(UserService $userService, SharedService $sharedService)
     {
-        return User::all();
+        $this->userService = $userService;
+        $this->sharedService = $sharedService;
     }
 
-    public function register(Request $request)
+    public function show()
+    {
+        return response(auth('sanctum')->user(), 201);
+    }
+
+    public function signup(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string',
             'password' => 'required|string',
             'email' => 'required|string|unique:users|email',
         ], [
@@ -39,73 +47,41 @@ class UserController extends Controller
         }
 
         $fields = $validator->validated();
-        $curl = curl_init();
-        $url = env("RAPIDAPI_URL") . http_build_query(['email' => $fields['email']]);
+        
+        $response = $this->sharedService->verifyEmail($fields['email']);
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "GET",
-            CURLOPT_HTTPHEADER => [env("RAPIDAPI_HOST"), env("RAPIDAPI_KEY")],
-        ]);
-
-        $emailValidationResponse = json_decode(curl_exec($curl));
-        $emailValidationErr = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($emailValidationErr) {
-            return response(['message' => 'Cannot validate email due to server error'], 401);
+        if ($response['error']) {
+            return response()->json(['message' => 'We cannot verify your email right now. Please retry signing up later or call our support team.'], 401);
         }
 
-        if ($emailValidationResponse->status == 'valid') {
-            $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
-            $customer = $stripe->customers->create([
-                'email' => $fields['email'],
-                'name' => $fields['username'],
-            ]);
+        if ($response['response']->status == 'valid') {
+            $userDTO = new UserDTO(
+                $request->firstName, 
+                $request->lastName, 
+                $request->sex, 
+                $request->dob, 
+                $request->email, 
+                $request->password
+            );
 
-            $user = User::create([
-                'username' => $fields['username'],
-                'password' => bcrypt($fields['password']),
-                'email' => $fields['email'],
-                'stripe_id' => $customer['id'],
-            ]);
+            $token = $this->userService->createUser($userDTO);
 
-            $token = $user->createToken($user->id)->plainTextToken;
-            $response = [
-                'user' => $user,
-                'token' => 'Bearer ' . $token
-            ];
-            return response($response, 201);
+            return response()->json($this->userService->createToken($token), 201);
         }
 
-        if ($emailValidationResponse->status == 'invalid') {
-            return response(['message' => 'Email does not exist'], 510);
+        if ($response['response']->status == 'invalid') {
+            return response(['message' => 'We cannot verify your email. Please check your email address.'], 510);
         }
 
         return response(['message' => 'Contact Support Group'], 500);
     }
-    public function loginWithToken(Request $request)
+    public function loginWithToken(Request $request): JsonResponse
     {
-        $user = auth('sanctum')->user();
-        $this->getCard($user);
-        $response = [
-            'user' => $user,
-            'token' => 'Bearer ' . $request->bearerToken()
-        ];
-
-        return response($response, 201);
+        return response()->json($this->userService->createToken($request->bearerToken()), 201);
     }
 
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
-
         $credValidator = Validator::make($request->all(), [
             'password' => 'required|string',
             'email' => 'required|string|email',
@@ -113,23 +89,19 @@ class UserController extends Controller
 
         if ($credValidator->fails()) {
             $message = $credValidator->getMessageBag()->first();
-            return response(['message' => $message], 422);
+            return response()->json(['message' => $message], 422);
         }
 
         $fields = $credValidator->validated();
         $user = User::where('email', $fields['email'])->first();
 
         if (!$user || !Hash::check($fields['password'], $user->password)) {
-            return response(['message' => 'Invalid credentials'], 401);
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         $token = $user->createToken($user->id)->plainTextToken;
-        $this->getCard($user);
-        $response = [
-            'user' => $user,
-            'token' => 'Bearer ' . $token
-        ];
-        return response($response, 201);
+
+        return response()->json($this->userService->createToken($token), 201);
     }
 
     public function logout(Request $request)
@@ -137,7 +109,7 @@ class UserController extends Controller
         $user = auth('sanctum')->user();
         PersonalAccessToken::where('tokenable_id', $user->id)->delete();
 
-        return response($user, 200);
+        return response()->json([], 204);
     }
 
     /**

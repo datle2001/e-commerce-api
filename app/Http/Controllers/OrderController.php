@@ -35,27 +35,31 @@ class OrderController extends Controller
             'user_id' => $user->id,
         ]);
 
-        foreach ($request->all() as $product) {
+        foreach ($request->all() as $selectedProduct) {
+            $product = $selectedProduct['product'];
             $productDB = Product::find($product['id']);
 
             $productOrderPair = [
-                'product_id' => $product["id"],
-                'quantity' => $product['quantityPick'],
+                'product_id' => $product['id'],
+                'quantity' => $selectedProduct['quantity'],
                 'order_id' => $order->id,
-                'can_fulfill' => $productDB['quantity_available'] > $product['quantityPick']
+                'can_fulfill' => $productDB['quantity_available'] > $selectedProduct['quantity']
             ];
             ProductOrder::create($productOrderPair);
 
             if ($productOrderPair['can_fulfill']) {
                 $productDB->update([
                     'quantity_available' =>
-                        $productDB['quantity_available'] - $product['quantityPick']
+                        $productDB['quantity_available'] - $selectedProduct['quantity']
                 ]);
             }
         }
 
         $origin = $request->header('origin');
-        $redirectURL = str_contains($origin, 'github') ? $origin.'/e-commerce-client/' : $request->header('referer');
+        $redirectURL = str_contains($origin, 'github') ? $origin . '/e-commerce-client/' : $request->header('referer');
+
+        if(sizeof($order->products()) == 0) {
+        }
 
         return $this->getStripeCheckoutLinkFrom($order->products(), $order->id, $redirectURL);
     }

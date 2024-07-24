@@ -3,20 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\Services\ProductService;
 
 class ProductController extends Controller
 {
+    private $productService;
+
+    public function __construct(ProductService $productService) {
+        $this->productService = $productService;
+    }
     /**
      * Get all products
-     *
-     * @return \Illuminate\Http\Response
+     * @param  Request $request
+     * @return Response
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        $products = Product::all();
+        $products = $this->productService->getProducts(
+            $request->query('pageSize'), 
+            $request->query('pageIndex')
+        );
 
-        return response($products, 200);
+        return response()->json($products);
     }
     /**
      * Store a newly created resource in storage.
@@ -45,7 +56,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        return response(Product::find($id), 200);
+        return response()->json($this->productService->getProduct($id));
     }
 
     /**
@@ -66,19 +77,13 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
-        $product = Product::find($id);
-        $updates = $request->all();
-
-        if ($updates['rating']) {
-            $curRating = $product->rating;
-            $curNumRating = $product->num_rating;
-            $newNumRating = $curNumRating + 1;
-            $newRating = ($curRating * $curNumRating + $updates['rating']) / $newNumRating;
-            $product->update(['num_rating' => $newNumRating, 'rating' => $newRating]);
+        if($this->productService->updateProduct($id, $request->all())) {
+            return response()->json(['message' => 'Successfully rated!']);
         }
-        return $product;
+
+        return response()->json(['message' => 'Please try again later.'], 503);
     }
 
     /**
