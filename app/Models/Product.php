@@ -22,6 +22,6 @@ class Product extends Model
          * Bypass Eloquent's default to combine 2 classes in alphabetical order 
          * (a.k.a 'order_product')
          */
-        return $this->belongsToMany(Order::class, 'product_orders', 'product_id', 'order_id')->using(ProductOrder::class)->select('order_id', 'quantity');
+        return $this->belongsToMany(Order::class, 'product_orders', 'product_id', 'order_id');
     }
 }

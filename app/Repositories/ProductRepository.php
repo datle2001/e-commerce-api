@@ -5,33 +5,44 @@ namespace App\Repositories;
 use App\Models\Product;
 use Illuminate\Support\Facades\Schema;
 
-class ProductRepository {
+class ProductRepository
+{
+  public function getProducts(int | null $pageSize, int | null $pageIndex, array | null $stringIds, array $excludedColumns = []): array
+  {
+    $query = Product::query();
 
-  public function getProducts(int $pageSize, int $pageIndex, array $excludedColumns = []): array {
-    return Product::paginate($pageSize, 
-      $this->filterColumns($excludedColumns), 
-      'page', 
+    if($stringIds != null) {
+      $query = $query->whereIn('id', $stringIds);
+    }
+
+    if($pageSize == null && $pageIndex == null) {
+      $pageSize = 15;
+      $pageIndex = 1;
+    }
+
+    return $query->paginate(
+      $pageSize,
+      $this->filterColumns($excludedColumns),
+      'page',
       $pageIndex
     )->all();
   }
 
-  public function getProduct(string $id, array $excludedColumns = []) {
-    return Product::find($id, $this->filterColumns($excludedColumns));
+  public function getProduct(string $id, array $excludedColumns = []): array
+  {
+    return Product::find($id)
+      ->select($this->filterColumns($excludedColumns))
+      ->first()
+      ->toArray();
   }
 
-  public function updateProduct(string $id, array $updates): bool {
-    $product =  Product::find($id);
-    $newUpdates = [];
-
-    if ($updates['rating']) {
-      $newUpdates['num_rating'] = $product->num_rating + 1;
-      $newUpdates['rating'] = ($product->rating * $product->num_rating + $updates['rating']) / ($product->num_rating + 1);
-    }
-
-    return $product->update($newUpdates);
+  public function updateProduct(string $id, array $updates): bool
+  {
+    return Product::find($id)->update($updates);
   }
 
-  private function filterColumns(array $excludedColumns): array {
+  private function filterColumns(array $excludedColumns): array
+  {
     return array_diff(Schema::getColumnListing('products'), $excludedColumns);
   }
 }

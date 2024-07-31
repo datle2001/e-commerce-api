@@ -11,7 +11,7 @@ class UserDTO {
   public string $stripeId;
 
   public function __construct(string $firstName, string $lastName, string $sex, string $dob, string $email, string $password) {
-    $this->firstname = $firstName;
+    $this->firstName = $firstName;
     $this->lastName = $lastName;
     $this->sex = $sex;
     $this->dob = $dob;

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use Illuminate\Http\JsonResponse;
 
 class SharedService {
   public function verifyEmail(string $email): array {
@@ -31,5 +32,13 @@ class SharedService {
       'response' => $emailValidationResponse,
       'error' => $emailValidationErr
     ];
+  }
+
+  public function handleServiceResponse(array $response): JsonResponse {
+    if (array_key_exists('message', $response)) {
+      return response()->json($response['message'], $response['statusCode']);
+    }
+
+    return response()->json($response['data'], $response['statusCode']);
   }
 }

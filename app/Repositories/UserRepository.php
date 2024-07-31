@@ -16,4 +16,15 @@ class UserRepository {
       "dob" => $userDTO->dob
     ]);
   }
+
+  public function saveStripeId(string $email, string $stripeId) {
+    $user = User::where('email', $email)->first();
+    $user['stripe_id'] = $stripeId;
+    $user->save();
+  }
+
+  public function findUser(string $column, $value): User | null 
+  {
+    return User::where($column, $value)->first();
+  }
 }

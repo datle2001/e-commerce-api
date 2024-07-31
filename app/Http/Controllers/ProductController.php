@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Services\SharedService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -10,24 +10,26 @@ use App\Services\ProductService;
 
 class ProductController extends Controller
 {
-    private $productService;
-
-    public function __construct(ProductService $productService) {
-        $this->productService = $productService;
+    public function __construct(
+        private ProductService $productService,
+        private SharedService $sharedService
+    ) {
     }
+
     /**
      * Get all products
      * @param  Request $request
      * @return Response
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
-        $products = $this->productService->getProducts(
-            $request->query('pageSize'), 
-            $request->query('pageIndex')
+        $response = $this->productService->getProducts(
+            $request->query('pageSize'),
+            $request->query('pageIndex'),
+            $request->query('productIds')
         );
 
-        return response()->json($products);
+        return $this->sharedService->handleServiceResponse($response);
     }
     /**
      * Store a newly created resource in storage.
@@ -37,15 +39,6 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'price' => 'required',
-            'description' => 'required',
-            'photo' => 'required',
-            'quantity_available' => 'required',
-        ]);
-
-        return response(Product::create($request->all()));
     }
 
     /**
@@ -54,9 +47,11 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
-        return response()->json($this->productService->getProduct($id));
+        $response = $this->productService->getProduct($id);
+
+        return $this->sharedService->handleServiceResponse($response);
     }
 
     /**
@@ -79,11 +74,9 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id): JsonResponse
     {
-        if($this->productService->updateProduct($id, $request->all())) {
-            return response()->json(['message' => 'Successfully rated!']);
-        }
+        $response = $this->productService->updateProduct($id, $request->all());
 
-        return response()->json(['message' => 'Please try again later.'], 503);
+        return $this->sharedService->handleServiceResponse($response);
     }
 
     /**
@@ -94,6 +87,5 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        return response(Product::destroy($id), 201);
     }
 }
