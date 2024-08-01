@@ -58,8 +58,7 @@ class ProductService
     if ($this->productRepository->updateProduct($id, $newUpdates)) {
       return ['data' => true, 'statusCode' => 201];
     }
-    ;
-
+    
     return ['message' => 'Please try again later.', 'statusCode' => 503];
   }
 

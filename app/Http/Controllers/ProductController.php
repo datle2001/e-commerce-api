@@ -18,7 +18,6 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        return ['hi', 'world'];
         $response = $this->productService->getProducts(
             $request->query('pageSize'),
             $request->query('pageIndex'),
