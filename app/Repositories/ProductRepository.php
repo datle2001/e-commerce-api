@@ -9,6 +9,7 @@ class ProductRepository
 {
   public function getProducts(int | null $pageSize, int | null $pageIndex, array | null $stringIds, array $excludedColumns = []): array
   {
+    return ['hi', 'world'];
     $query = Product::query();
 
     if($stringIds != null) {
