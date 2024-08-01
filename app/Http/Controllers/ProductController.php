@@ -16,13 +16,9 @@ class ProductController extends Controller
     ) {
     }
 
-    /**
-     * Get all products
-     * @param  Request $request
-     * @return Response
-     */
     public function index(Request $request)
     {
+        return ['hi', 'world'];
         $response = $this->productService->getProducts(
             $request->query('pageSize'),
             $request->query('pageIndex'),
