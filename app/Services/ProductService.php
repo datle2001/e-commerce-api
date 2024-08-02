@@ -11,7 +11,7 @@ class ProductService
   {
   }
 
-  public function getProducts(int|null $pageSize, int|null $pageIndex, string|null $productIds): array
+  public function getProducts(int | null $pageSize = 15, int|null $pageIndex = 1, string|null $productIds): array
   {
     if ($productIds != null) {
       $productIds = array_map('intval', explode(',', $productIds));

@@ -15,11 +15,6 @@ class ProductRepository
       $query = $query->whereIn('id', $stringIds);
     }
 
-    if($pageSize == null && $pageIndex == null) {
-      $pageSize = 15;
-      $pageIndex = 1;
-    }
-
     return $query->paginate(
       $pageSize,
       $this->filterColumns($excludedColumns),
