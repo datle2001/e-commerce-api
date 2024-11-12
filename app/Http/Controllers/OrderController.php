@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\ProductOrder;
 use App\Repositories\OrderRepository;
 use App\Services\OrderService;
 use App\Services\SharedService;
 use App\Services\StripeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class OrderController extends Controller
 {

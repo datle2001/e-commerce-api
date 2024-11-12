@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedFloat('price');
             $table->unsignedSmallInteger('quantity');
             $table->string('photo_key');
+            $table->string('stripe_id')->unique()->nullable();
             $table->timestamps();
         });
     }

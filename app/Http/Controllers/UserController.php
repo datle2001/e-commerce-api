@@ -43,7 +43,7 @@ class UserController extends Controller
     {
         $request->user()->tokens()->where('name', $request->user()->id)->delete();
 
-        return response()->json([], 204);
+        return response()->json(['message' => 'You have successfully logged out'], 204);
     }
 
     /**

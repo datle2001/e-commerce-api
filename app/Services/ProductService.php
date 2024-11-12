@@ -24,10 +24,6 @@ class ProductService
       ['description', 'stripe_id']
     );
 
-    foreach ($products as $key => $product) {
-      $this->addPhotoUrl($product);
-    }
-
     // $key = $pageSize.' '.$pageIndex;
 
     // $products = Cache::remember($key, 60, function () use ($pageSize, $pageIndex) {
@@ -40,7 +36,6 @@ class ProductService
   public function getProduct(string $id)
   {
     $product = $this->productRepository->getProduct($id, ['stripe_id']);
-    $this->addPhotoUrl($product);
 
     return ['data' => $product, 'statusCode' => 201];
   }
@@ -60,11 +55,5 @@ class ProductService
     }
     
     return ['message' => 'Please try again later.', 'statusCode' => 503];
-  }
-
-  private function addPhotoUrl($product)
-  {
-    $product['photoUrl'] = config('api.google_storage_url') . '/products/' . $product['photo_key'];
-    unset($product['photo_key']);
   }
 }

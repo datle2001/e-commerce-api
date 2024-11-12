@@ -5,16 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Facades\File;
 
 class Product extends Model
 {
     use HasFactory;
     protected $table = 'products';
-    protected $fillable = ['quantity_available', 'rating', 'num_rating', 'stripe_id'];
+    protected $fillable = ['quantity', 'rating', 'num_rating', 'stripe_id', 'photo_key'];
     protected $hidden = ['created_at', 'updated_at'];
     /**
-     * The orders that contains the product
+     * The orders that contain the product
      */
     public function orders(): BelongsToMany
     {
@@ -22,6 +21,6 @@ class Product extends Model
          * Bypass Eloquent's default to combine 2 classes in alphabetical order 
          * (a.k.a 'order_product')
          */
-        return $this->belongsToMany(Order::class, 'product_orders', 'product_id', 'order_id');
+        return $this->belongsToMany(Order::class)->using(ProductOrder::class);
     }
 }

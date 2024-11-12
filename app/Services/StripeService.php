@@ -63,18 +63,18 @@ class StripeService
   /**
    * @return array line items for payment link
    */
-  public function createLineItemsFrom(string $orderId, StripeClient $stripe)
+  public function createLineItemsFrom(string $orderId, StripeClient $stripe): array
   {
     $orderedProducts = $this->orderRepository->getProducts($orderId);
-
+    
     $lineItems = [];
 
     foreach ($orderedProducts as $orderedProduct) {
-      $productDB = $this->productRepository->getProduct($orderedProduct['pivot']['product_id']);
+      $productDB = $this->productRepository->getProduct($orderedProduct['id']);
       $productStripe = null;
 
-      if ($productDB['stripe_id'] == '') {
-        $productStripe = $this->createProduct($productDB['name']);
+      if ($productDB['stripe_id'] ?? null === null) {
+        $productStripe = $this->createStripeProduct($productDB['name']);
 
         $this->productRepository->updateProduct(
           $productDB['id'],
@@ -93,14 +93,20 @@ class StripeService
 
       $lineItems[] = [
         'price' => $priceStripe->id,
-        'quantity' => $orderedProduct['quantity'],
+        'quantity' => $orderedProduct['pivot']['quantity'],
       ];
     }
 
     return $lineItems;
   }
 
-  public function createProduct($productName): Product {
+  /**
+   * Create a Stripe version of the $productName
+   * 
+   * @param mixed $productName
+   * @return \Stripe\Product
+   */
+  public function createStripeProduct($productName): Product {
     $stripe = new StripeClient(config('api.stripe_secret'));
     
     return $stripe->products->create([

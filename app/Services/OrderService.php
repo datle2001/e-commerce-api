@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Order;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 
 class OrderService
 {
-  public function __construct(private OrderRepository $orderRepository, private ProductRepository $productRepository)
+  public function __construct(private OrderRepository $orderRepository, private ProductRepository $productRepository, private ProductService $productService)
   {
   }
 
@@ -24,7 +23,7 @@ class OrderService
         'product_id' => $product['id'],
         'quantity' => $selectedProduct['quantity'],
         'order_id' => $orderId,
-        'can_fulfill' => $productDB['quantity_available'] > $selectedProduct['quantity']
+        'can_fulfill' => $productDB['quantity'] > $selectedProduct['quantity']
       ];
 
       $this->orderRepository->saveProduct($orderedProduct);
@@ -33,8 +32,8 @@ class OrderService
         $this->productRepository->updateProduct(
           $productDB['id'],
           [
-            'quantity_available' =>
-              $productDB['quantity_available'] - $selectedProduct['quantity']
+            'quantity' =>
+              $productDB['quantity'] - $selectedProduct['quantity']
           ]
         );
       }
@@ -45,20 +44,23 @@ class OrderService
 
   public function getOrder(string $id): array
   {
+    // fix add photo url
     $rawOrderedProducts = $this->orderRepository->getProducts($id);
 
     $orderedProducts = [];
 
     foreach ($rawOrderedProducts as $index => $rawOrderedProduct) {
-      $orderedProduct = [
-        'product' => $this->productRepository->getProduct(
+      $product = $this->productRepository->getProduct(
           $rawOrderedProduct['pivot']['product_id'],
           ["description", 'stripe_id']
-        ),
-        'can_fulfill' => $rawOrderedProduct['can_fulfill'],
-        'ordered_quantity' => $rawOrderedProduct['quantity'],
-      ];
+      );
 
+      $orderedProduct = [
+        'product' => $product,
+        'can_fulfill' => $rawOrderedProduct['pivot']['can_fulfill'],
+        'quantity' => $rawOrderedProduct['pivot']['quantity'],
+      ];
+      
       $orderedProducts[] = $orderedProduct;
     }
 

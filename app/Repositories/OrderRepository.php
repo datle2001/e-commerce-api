@@ -9,7 +9,7 @@ class OrderRepository
 {
   public function getProducts(string $orderId): array
   {
-    return Order::find($orderId)->products()->get(['quantity', 'can_fulfill'])->toArray();
+    return Order::find($orderId)->products()->withPivot(['quantity', 'can_fulfill'])->get()->toArray();
   }
 
   public function createOrder($userId): string
